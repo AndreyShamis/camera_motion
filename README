@@ -1,0 +1,7 @@
+Install
+
+pip install gpiozero
+pip install telepot
+pip install --upgrade  requests
+
+
