@@ -4,4 +4,5 @@ pip install gpiozero
 pip install telepot
 pip install --upgrade  requests
 
+apt-get install python-opencv libopencv-dev python-numpy python-dev
 
