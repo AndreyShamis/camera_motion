@@ -142,6 +142,8 @@ def main_dva():
     # loop over the frames of the video
     count = 0
     trashhold=0
+    exec_path = os.getcwd()
+    print ("Exec path " + exec_path)
     while True:
         count=count+1
         # grab the current frame and initialize the occupied/unoccupied
@@ -205,8 +207,11 @@ def main_dva():
                 trashhold = 0
             try:
                 if trashhold > 30 and trashhold%20==0:
-                    cv2.imwrite(os.path.join("/home/werd/dev/camera_motion/pic_detect", '%d.jpg') % count, frame)
-                    cv2.imwrite(os.path.join("/home/werd/dev/camera_motion/pic_detect", '%d_delta.jpg') % count, frameDelta)
+                    f_image_path =os.path.join(exec_path,"pic_detect", '%d.jpg') % count
+                    s_image_path =os.path.join(exec_path,"pic_detect", '%d_delta.jpg') % count
+                    ##print("Image path" + f_image_path)
+                    cv2.imwrite(f_image_path, frame)
+                    cv2.imwrite(s_image_path, frameDelta)
                     telegram_send_all_images("pic_detect", True)
             except:
                 pass
@@ -217,7 +222,7 @@ def main_dva():
         cv2.imshow("Frame Delta", frameDelta)
         cv2.imshow("new Frame", newFrame)
         key = cv2.waitKey(1) & 0xFF
-
+        print(trashhold)
         # if the `q` key is pressed, break from the lop
         if key == ord("q"):
             break
