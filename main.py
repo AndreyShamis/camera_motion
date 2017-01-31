@@ -68,21 +68,23 @@ def telegram_send(input_file):
 def main():
     file = '/home/pi/alarms/'
     counter = 0
-    threshhold = 0
+    threshhold = 5
     # pir = MotionSensor(4)
     # Telegram_send('/home/werd/milena')
     # exit()
     try:
         #camera = cv2.VideoCapture('/dev/video0')
         pygame.camera.init()
-        pygame.camera.list_cameras()
+        #pygame.camera.list_cameras()
         # cam = pygame.camera.Camera("/dev/video0", (640, 480))
         cam = pygame.camera.Camera("/dev/video0", (1280, 720))
         patt = '%m%d-%H%M%S.%f'
+        cam.start()
+        time.sleep(0.1)
         while counter <= threshhold:
             # time.sleep(0.1)
             if 1 == 1:  # pir.motion_detected:
-                cam.start()
+                #cam.start()
                 time.sleep(0.1)  # You might need something higher in the beginning
                 time_now = datetime.utcnow().strftime(patt)
                 #print("Motion detected at " + str(time_now))
@@ -97,10 +99,11 @@ def main():
                 img = cam.get_image()
 
                 pygame.image.save(img, "pics/" + time_now + ".jpg")
-                cam.stop()
+
                 #cv2.imwrite(file + str(time.strftime("%Y%m%d-%H%M%S")) + '.jpg', image)
                 counter += 1
                 telegram_send_all_images("pics/", True)
+        cam.stop()
         if counter >= threshhold: telegram_send_all_images("pics/",True)
     except Exception as e:
         print('Something is wrong.', e)
