@@ -209,7 +209,7 @@ def main_dva():
                 if trashhold > 30 and trashhold%20==0:
                     f_image_path =os.path.join(exec_path,"pic_detect", '%d.jpg') % count
                     s_image_path =os.path.join(exec_path,"pic_detect", '%d_delta.jpg') % count
-                    ##print("Image path" + f_image_path)
+                    print("Send image [Image path=" + f_image_path + "]")
                     cv2.imwrite(f_image_path, frame)
                     cv2.imwrite(s_image_path, frameDelta)
                     telegram_send_all_images("pic_detect", True)
