@@ -119,7 +119,7 @@ def main_dva():
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video", help="path to the video file")
-    ap.add_argument("-a", "--min-area", type=int, default=5000, help="minimum area size")
+    ap.add_argument("-a", "--min-area", type=int, default=20, help="minimum area size")
     args = vars(ap.parse_args())
     pprint(args)
     # if the video argument is None, then we are reading from webcam
@@ -149,6 +149,7 @@ def main_dva():
         # grab the current frame and initialize the occupied/unoccupied
         # text
         (grabbed, rframe) = camera.read()
+        (grabbed2, sec_frame) = camera.read()
         text = "Unoccupied"
 
         # if the frame could not be grabbed, then we have reached the end
@@ -160,8 +161,12 @@ def main_dva():
 
         # resize the frame, convert it to grayscale, and blur it
         frame = imutils.resize(rframe, width=IMAGE_SIZE)
+        sec_frame = imutils.resize(sec_frame , width=IMAGE_SIZE)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
+        gray2 = cv2.cvtColor(sec_frame, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
+
         #print "Here2"
         # if the first frame is None, initialize it
         if firstFrame is None:
@@ -170,8 +175,8 @@ def main_dva():
             continue
         # compute the absolute difference between the current frame and
         # first frame
-        frameDelta = cv2.absdiff(firstFrame, gray)
-        newFrame = cv2.absdiff(frame,frame)
+        frameDelta = cv2.absdiff(gray2, gray)
+        #newFrame = cv2.absdiff(frame,frame)
         thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
 
         # dilate the thresholded image to fill in holes, then find contours
@@ -203,15 +208,15 @@ def main_dva():
         cv2.imshow("Security Feed", frame)
         if text == "Occupied":
             trashhold=trashhold+1
-            if trashhold>70:
+            if trashhold>8:
                 trashhold = 0
             try:
-                if trashhold > 30 and trashhold%20==0:
+                if trashhold > 4 and trashhold%2==0:
                     f_image_path =os.path.join(exec_path,"pic_detect", '%d.jpg') % count
                     s_image_path =os.path.join(exec_path,"pic_detect", '%d_delta.jpg') % count
                     print("Send image [Image path=" + f_image_path + "]")
-                    cv2.imwrite(f_image_path, frame)
-                    cv2.imwrite(s_image_path, frameDelta)
+                    cv2.imwrite(f_image_path, sec_frame)
+                    #cv2.imwrite(s_image_path, frameDelta)
                     telegram_send_all_images("pic_detect", True)
             except:
                 pass
@@ -220,7 +225,7 @@ def main_dva():
 
         cv2.imshow("Thresh", thresh)
         cv2.imshow("Frame Delta", frameDelta)
-        cv2.imshow("new Frame", newFrame)
+        #cv2.imshow("new Frame", newFrame)
         key = cv2.waitKey(1) & 0xFF
         print(trashhold)
         # if the `q` key is pressed, break from the lop
