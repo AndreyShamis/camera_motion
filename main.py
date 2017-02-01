@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from gpiozero import MotionSensor
+from multiprocessing import Process, Queue
 import cv as cv2
 import pygame
 import pygame.camera
@@ -117,6 +118,7 @@ def main_func():
 
 def main_dva():
     import cv2
+    queue = multiprocessing.Queue()
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video", help="path to the video file")
@@ -223,8 +225,11 @@ def main_dva():
                     cv2.imwrite(f_image_path, sec_frame)
                     #cv2.imwrite(s_image_path, frameDelta)
                     if args['send-pics'] == 'Yes':
-                        t = threading.Thread(target=telegram_send_all_images, args=("pic_detect", True))
-                        t.start()
+                        #t = threading.Thread(target=telegram_send_all_images, args=("pic_detect", True))
+                        #t.start()
+                        p = Process(target=telegram_send_all_images, args=("pic_detect", True,))
+                        p.start()
+                        #queue.p
                         #telegram_send_all_images("pic_detect", True)
             except:
                 pass
