@@ -2,6 +2,7 @@
 
 from gpiozero import MotionSensor
 from multiprocessing import Process, Queue
+
 import cv as cv2
 import pygame
 import pygame.camera
@@ -33,10 +34,19 @@ from pprint import pprint
 chat_id_value = '290710006'
 token = '248037479:AAELGWsUIUkrhTTRpkotL1j2P--26Sfkov4'
 
+#lock = threading.Lock()
+semaphore = threading.BoundedSemaphore(1)
+lock_w = False
 
-def telegram_photo_file(file_path):
+def telegram_photo_file(file_path,remove=False):
     bot = telepot.Bot(token)
-    bot.sendPhoto(chat_id=chat_id_value, photo=open(file_path, 'rb'))
+    file_name = os.getcwd() + "/" + file_path
+
+    if os.path.isfile(file_name):
+        bot.sendPhoto(chat_id=chat_id_value, photo=open(file_name, 'rb'))
+        #pprint(file_name)
+        if remove == True:
+            os.remove(file_name)
 
 
 def telegram_message_file(file_path):
@@ -45,13 +55,25 @@ def telegram_message_file(file_path):
 
 
 def telegram_send_all_images(folder,remove=False):
-    l = glob.iglob(folder+'/*.jpg')
-    for t in l:
-        telegram_photo_file(t)
-        file_name = os.getcwd() + "/" + t
-        pprint(file_name)
-        if remove == True:
-            os.remove(file_name)
+    #lock.acquire()
+    global semaphore
+    global lock_w
+    semaphore.acquire()
+    while lock_w == True:
+       time.sleep(0.01)
+    lock_w = True
+    try:
+        l = glob.iglob(folder+'/*.jpg')
+        for t in l:
+            telegram_photo_file(t,True)
+            #file_name = os.getcwd() + "/" + t
+            #pprint(file_name)
+            #if remove == True:
+            #    os.remove(file_name)
+    finally:
+        #lock.release()
+        lock_w = False
+        semaphore.release()
 
 
 def telegram_send(input_file):
@@ -118,7 +140,7 @@ def main_func():
 
 def main_dva():
     import cv2
-    queue = multiprocessing.Queue()
+    queue = Queue()
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video", help="path to the video file")
@@ -221,13 +243,15 @@ def main_dva():
                 if trashhold == 2:
                     cv2.imwrite(f_image_path, sec_frame)
                 if trashhold >= 4 and trashhold%2==0:
-                    print("Send image [Image path=" + f_image_path + "]")
+
                     cv2.imwrite(f_image_path, sec_frame)
                     #cv2.imwrite(s_image_path, frameDelta)
-                    if args['send-pics'] == 'Yes':
+                    if args['send_pics'] == 'Yes':
                         #t = threading.Thread(target=telegram_send_all_images, args=("pic_detect", True))
                         #t.start()
+
                         p = Process(target=telegram_send_all_images, args=("pic_detect", True,))
+                        print("Send image [Image path=" + f_image_path + "]")
                         p.start()
                         #queue.p
                         #telegram_send_all_images("pic_detect", True)
