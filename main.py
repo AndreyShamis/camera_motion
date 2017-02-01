@@ -149,6 +149,7 @@ def main_dva():
         # grab the current frame and initialize the occupied/unoccupied
         # text
         (grabbed, rframe) = camera.read()
+        time.sleep(0.05)
         (grabbed2, sec_frame) = camera.read()
         text = "Unoccupied"
 
@@ -211,9 +212,12 @@ def main_dva():
             if trashhold>8:
                 trashhold = 0
             try:
-                if trashhold > 4 and trashhold%2==0:
-                    f_image_path =os.path.join(exec_path,"pic_detect", '%d.jpg') % count
-                    s_image_path =os.path.join(exec_path,"pic_detect", '%d_delta.jpg') % count
+                f_image_path = os.path.join(exec_path, "pic_detect", '%d.jpg') % count
+                s_image_path = os.path.join(exec_path, "pic_detect", '%d_delta.jpg') % count
+
+                if trashhold == 2:
+                    cv2.imwrite(f_image_path, sec_frame)
+                if trashhold >= 4 and trashhold%2==0:
                     print("Send image [Image path=" + f_image_path + "]")
                     cv2.imwrite(f_image_path, sec_frame)
                     #cv2.imwrite(s_image_path, frameDelta)
