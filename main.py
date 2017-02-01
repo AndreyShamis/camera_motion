@@ -11,6 +11,7 @@ import os
 import argparse
 import datetime
 import imutils
+import threading
 
 from datetime import datetime
 from pprint import pprint
@@ -222,7 +223,9 @@ def main_dva():
                     cv2.imwrite(f_image_path, sec_frame)
                     #cv2.imwrite(s_image_path, frameDelta)
                     if args['send-pics'] == 'Yes':
-                        telegram_send_all_images("pic_detect", True)
+                        t = threading.Thread(target=telegram_send_all_images, args=("pic_detect", True))
+                        t.start()
+                        #telegram_send_all_images("pic_detect", True)
             except:
                 pass
         else:
