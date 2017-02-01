@@ -120,6 +120,7 @@ def main_dva():
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video", help="path to the video file")
     ap.add_argument("-a", "--min-area", type=int, default=20, help="minimum area size")
+    ap.add_argument("-s", "--send-pics", default='No', help="Send pics")
     args = vars(ap.parse_args())
     pprint(args)
     # if the video argument is None, then we are reading from webcam
@@ -149,7 +150,7 @@ def main_dva():
         # grab the current frame and initialize the occupied/unoccupied
         # text
         (grabbed, rframe) = camera.read()
-        time.sleep(0.05)
+        time.sleep(0.01)
         (grabbed2, sec_frame) = camera.read()
         text = "Unoccupied"
 
@@ -209,8 +210,7 @@ def main_dva():
         cv2.imshow("Security Feed", frame)
         if text == "Occupied":
             trashhold=trashhold+1
-            if trashhold>8:
-                trashhold = 0
+
             try:
                 f_image_path = os.path.join(exec_path, "pic_detect", '%d.jpg') % count
                 s_image_path = os.path.join(exec_path, "pic_detect", '%d_delta.jpg') % count
@@ -221,17 +221,22 @@ def main_dva():
                     print("Send image [Image path=" + f_image_path + "]")
                     cv2.imwrite(f_image_path, sec_frame)
                     #cv2.imwrite(s_image_path, frameDelta)
-                    telegram_send_all_images("pic_detect", True)
+                    if args['send-pics'] == 'Yes':
+                        telegram_send_all_images("pic_detect", True)
             except:
                 pass
         else:
             trashhold=0
 
+        if trashhold>=8:
+            trashhold = 0
+
         cv2.imshow("Thresh", thresh)
         cv2.imshow("Frame Delta", frameDelta)
         #cv2.imshow("new Frame", newFrame)
         key = cv2.waitKey(1) & 0xFF
-        print(trashhold)
+        if trashhold > 0:
+            print(trashhold)
         # if the `q` key is pressed, break from the lop
         if key == ord("q"):
             break
