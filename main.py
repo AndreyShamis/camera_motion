@@ -3,7 +3,9 @@
 from gpiozero import MotionSensor
 from multiprocessing import Process, Queue
 
-import cv as cv2
+#import cv as cv2
+from cv2 import *
+import cv2
 import pygame
 import pygame.camera
 import telepot
@@ -139,18 +141,18 @@ def main_func():
 
 
 def main_dva():
-    import cv2
     queue = Queue()
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video", help="path to the video file")
     ap.add_argument("-a", "--min-area", type=int, default=20, help="minimum area size")
     ap.add_argument("-s", "--send-pics", default='No', help="Send pics")
+    ap.add_argument("-p", "--show-video", default='Yes', help="Show Video")
     args = vars(ap.parse_args())
     pprint(args)
     # if the video argument is None, then we are reading from webcam
     if args.get("video", None) is None:
-        camera = cv2.VideoCapture(-1)
+        camera = cv2.VideoCapture(0)
         print (camera.isOpened())
         time.sleep(0.25)
         print ("----------")
@@ -225,14 +227,13 @@ def main_dva():
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 4)
             text = "Occupied"
 
-        time_str = datetime.now().strftime("%A %d %B %Y %I:%M:%S%p")
+        time_str = datetime.now().strftime("%A %d %B %Y %H:%M:%S.%f")
 
         # draw the text and timestamp on the frame
         cv2.putText(frame, "STAT: {}".format(text), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         cv2.putText(frame, time_str, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+        cv2.putText(sec_frame, time_str, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
-        # show the frame and record if the user presses a key
-        cv2.imshow("Security Feed", frame)
         if text == "Occupied":
             trashhold=trashhold+1
 
@@ -262,16 +263,21 @@ def main_dva():
 
         if trashhold>=8:
             trashhold = 0
+        if args['show_video'] == 'Yes':
+            # show the frame and record if the user presses a key
+            cv2.imshow("Security Feed", frame)
+            cv2.imshow("Thresh", thresh)
+            cv2.imshow("Frame Delta", frameDelta)
+            cv2.imshow("Second Frame", sec_frame)
+            key = cv2.waitKey(1) & 0xFF
+            #cv2.imshow("new Frame", newFrame)
+            # if the `q` key is pressed, break from the lop
+            if key == ord("q"):
+                break
 
-        cv2.imshow("Thresh", thresh)
-        cv2.imshow("Frame Delta", frameDelta)
-        #cv2.imshow("new Frame", newFrame)
-        key = cv2.waitKey(1) & 0xFF
         if trashhold > 0:
             print(trashhold)
-        # if the `q` key is pressed, break from the lop
-        if key == ord("q"):
-            break
+
         if text == "Occupied":
             try:
                 pass
