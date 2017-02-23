@@ -33,7 +33,7 @@ from pprint import pprint
 # werd_chat_id = -1001117363466
 # milena =
 # andrey =290710006
-chat_id_value = '290710006'
+chat_id_value = '-1001117363466'
 token = '248037479:AAELGWsUIUkrhTTRpkotL1j2P--26Sfkov4'
 
 #lock = threading.Lock()
@@ -161,7 +161,7 @@ def main_dva():
     else:
         camera = cv2.VideoCapture(args["video"])
 
-    IMAGE_SIZE=400
+    IMAGE_SIZE=4000
     # initialize the first frame in the video stream
     firstFrame = None
     #(grabbed, firstFrame) = camera.read()
@@ -241,19 +241,20 @@ def main_dva():
                 f_image_path = os.path.join(exec_path, "pic_detect", '%d.jpg') % count
                 s_image_path = os.path.join(exec_path, "pic_detect", '%d_delta.jpg') % count
 
-                if trashhold == 2:
-                    cv2.imwrite(f_image_path, sec_frame)
-                if trashhold >= 4 and trashhold%2==0:
+                #if trashhold == 2*2:
+                #    cv2.imwrite(f_image_path, sec_frame)
+                if trashhold >= 4*2 and trashhold%2==0:
 
                     cv2.imwrite(f_image_path, sec_frame)
                     #cv2.imwrite(s_image_path, frameDelta)
                     if args['send_pics'] == 'Yes':
-                        #t = threading.Thread(target=telegram_send_all_images, args=("pic_detect", True))
-                        #t.start()
+                        t = threading.Thread(target=telegram_send_all_images, args=("pic_detect", True))
+                        t.start()
 
-                        p = Process(target=telegram_send_all_images, args=("pic_detect", True,))
+                        #p = Process(target=telegram_send_all_images, args=("pic_detect", True,))
                         print("Send image [Image path=" + f_image_path + "]")
-                        p.start()
+                        #p.start()
+                        t.join()
                         #queue.p
                         #telegram_send_all_images("pic_detect", True)
             except:
@@ -261,7 +262,7 @@ def main_dva():
         else:
             trashhold=0
 
-        if trashhold>=8:
+        if trashhold>=8*(2-0.5):
             trashhold = 0
         if args['show_video'] == 'Yes':
             # show the frame and record if the user presses a key

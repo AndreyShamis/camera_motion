@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_opencv" default="compile.module.opencv">
+  <dirname property="module.opencv.basedir" file="${ant.file.module_opencv}"/>
+  
+  <property name="module.jdk.home.opencv" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.opencv" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.opencv" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.opencv" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name="opencv.output.dir" value="${module.opencv.basedir}/out/production/opencv"/>
+  <property name="opencv.testoutput.dir" value="${module.opencv.basedir}/out/test/opencv"/>
+  
+  <path id="opencv.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="opencv.module.production.classpath">
+    <path refid="${module.jdk.classpath.opencv}"/>
+    <pathelement location="${basedir}/../../../../usr/local/share/OpenCV/java/opencv-320.jar"/>
+  </path>
+  
+  <path id="opencv.runtime.production.module.classpath">
+    <pathelement location="${opencv.output.dir}"/>
+    <pathelement location="${basedir}/../../../../usr/local/share/OpenCV/java/opencv-320.jar"/>
+  </path>
+  
+  <path id="opencv.module.classpath">
+    <path refid="${module.jdk.classpath.opencv}"/>
+    <pathelement location="${opencv.output.dir}"/>
+    <pathelement location="${basedir}/../../../../usr/local/share/OpenCV/java/opencv-320.jar"/>
+  </path>
+  
+  <path id="opencv.runtime.module.classpath">
+    <pathelement location="${opencv.testoutput.dir}"/>
+    <pathelement location="${opencv.output.dir}"/>
+    <pathelement location="${basedir}/../../../../usr/local/share/OpenCV/java/opencv-320.jar"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.opencv">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.opencv">
+    <patternset refid="excluded.from.module.opencv"/>
+  </patternset>
+  
+  <path id="opencv.module.sourcepath">
+    <dirset dir="${module.opencv.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.opencv" depends="compile.module.opencv.production,compile.module.opencv.tests" description="Compile module opencv"/>
+  
+  <target name="compile.module.opencv.production" depends="register.custom.compilers" description="Compile module opencv; production classes">
+    <mkdir dir="${opencv.output.dir}"/>
+    <javac2 destdir="${opencv.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.opencv}/javac">
+      <compilerarg line="${compiler.args.opencv}"/>
+      <bootclasspath refid="opencv.module.bootclasspath"/>
+      <classpath refid="opencv.module.production.classpath"/>
+      <src refid="opencv.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.opencv"/>
+    </javac2>
+    
+    <copy todir="${opencv.output.dir}">
+      <fileset dir="${module.opencv.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.opencv.tests" depends="register.custom.compilers,compile.module.opencv.production" description="compile module opencv; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.opencv" description="cleanup module">
+    <delete dir="${opencv.output.dir}"/>
+    <delete dir="${opencv.testoutput.dir}"/>
+  </target>
+</project>
